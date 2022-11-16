@@ -88,7 +88,7 @@ const AddBookModule = async (request, h) => {
     }
 
     return new Promise((resolve, reject) => {
-        connection.query('INSERT INTO booksitem (id,name,year,author,summary,publisher,pageCount,readPage,finished,reading,insertedAt) VALUES(?,?,?,?,?,?,?,?,?,?,?)',
+        connection.query('INSERT INTO booksitem (id,name,year,author,summary,publisher,pageCount,readPage,finished,reading,insertedAt,updatedAt) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)',
             [id, name, year, author, summary, publisher, pageCount, readPage, finished, reading, insertedAt, updatedAt],
             function (error, results, fields) {
                 if (error) console.log(error);
