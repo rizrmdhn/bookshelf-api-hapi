@@ -1,10 +1,10 @@
-const mysql = require('mysql');
+const mysql = require('pg');
 
 const connection = mysql.createConnection({
-    host: 'localhost',
-    user: 'root',
-    password: '',
-    database: 'books',
+    connectionString: process.env.DATABASE_URL,
+    ssl: {
+      rejectUnauthorized: false,
+    },
 });
 
 connection.connect((err) => {
