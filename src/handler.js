@@ -91,7 +91,7 @@ const AddBookModule = async (request, h) => {
         connection.query('INSERT INTO booksitem (id,name,year,author,summary,publisher,pageCount,readPage,finished,reading,insertedAt) VALUES(?,?,?,?,?,?,?,?,?,?,?)',
             [id, name, year, author, summary, publisher, pageCount, readPage, finished, reading, insertedAt, updatedAt],
             function (error, results, fields) {
-                if (error) throw error;
+                if (error) console.log(error);
 
                 let view = async () => {
                     const books = await getBooksFromDB();
@@ -238,7 +238,7 @@ const DeleteBookByIdModule = async (request, h) => {
     return new Promise((resolve, reject) => {
         connection.query('DELETE FROM booksitem WHERE id=?', [id],
             function (error, results, fields) {
-                if (error) throw error;
+                if (error) console.log(error);
 
                 let view = async () => {
                     const index = books.findIndex((book) => book.id === id);

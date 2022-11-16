@@ -11,7 +11,6 @@ exports.getBooksFromDB = function (request, h) {
         let view = () => {
             return books;
         }
-        console.log(results);
         return resolve(view())
     });
     })

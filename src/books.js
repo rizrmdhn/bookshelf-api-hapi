@@ -8,6 +8,7 @@ const books = async (request, h) => {
         books: data,
     },
   });
+  console.log(data);
   response.code(200);
   return response;
 };
