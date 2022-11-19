@@ -2,6 +2,17 @@ const { nanoid } = require("nanoid");
 const connection = require("./dbconfig");
 const { getBooksFromDB } = require("./getBookFromDB");
 
+
+const CheckApi = (request, h) => {
+
+    const response = h.response({
+        status: 'success',
+        message: 'Api Sedang berjalan',
+    });
+    response.code(200);
+    return response;
+};
+
 const GetBookModule = async (request, h) => {
 
     const { name } = request.query;
@@ -274,4 +285,5 @@ module.exports = {
     GetBookByIdModule,
     EditBookByIdModule,
     DeleteBookByIdModule,
+    CheckApi,
 };

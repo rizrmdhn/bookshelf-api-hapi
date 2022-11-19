@@ -3,9 +3,9 @@ const mysql = require('mysql');
 const dbConfig = {
   multipleStatements: true,
   host: 'remotemysql.com',
-  user: 'byMWsNlDww',
-  password: 'PLJiPdPZ32',
-  database: 'byMWsNlDww',
+  user: 'cZODE1Dfez',
+  password: 'NJZ8flVKhh',
+  database: 'cZODE1Dfez',
 };
 
 const connection = mysql.createPool(dbConfig);

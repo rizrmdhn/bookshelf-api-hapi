@@ -4,6 +4,7 @@ const {
     GetBookByIdModule,
     EditBookByIdModule,
     DeleteBookByIdModule, 
+    CheckApi,
 } = require("./handler");
 
 const routes = [
@@ -31,6 +32,11 @@ const routes = [
         method: 'DELETE',
         path: '/books/{id}',
         handler: DeleteBookByIdModule,
+    },
+    {
+        method: 'GET',
+        path: '/',
+        handler: CheckApi,
     },
 ];
 
