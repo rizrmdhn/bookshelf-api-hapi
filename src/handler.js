@@ -41,6 +41,7 @@ const GetBookModule = async (request, h) => {
                     summary: book.summary,
                     pageCount: book.pageCount,
                     readPage: book.readPage,
+                    insertedAt: book.insertedAt,
                     updatedAt: book.updatedAt,
                 })),
             },
