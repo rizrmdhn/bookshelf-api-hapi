@@ -15,8 +15,7 @@ const CheckApi = (request, h) => {
 
 const GetBookModule = async (request, h) => {
 
-    const { name } = request.query;
-
+    const { name, reading, finished } = request.query;
 
 
     let data = await getBooksFromDB();
@@ -25,6 +24,14 @@ const GetBookModule = async (request, h) => {
 
         if (name !== undefined) {
             data = data.filter((book) => book.name.toLowerCase().includes(name.toLowerCase()));
+        }
+        if (reading !== undefined) {
+            data = data.filter((book) => book.reading === `${!!Number(reading)}`);
+        }
+
+        if (finished !== undefined) {
+            data = data.filter((book) => book.finished === `${!!Number(finished)}`);
+
         }
 
         const response = h.response({
@@ -65,7 +72,8 @@ const GetBookModule = async (request, h) => {
 
 const AddBookModule = async (request, h) => {
 
-    const { name,
+    const {
+        name,
         year,
         author,
         summary,
@@ -76,28 +84,31 @@ const AddBookModule = async (request, h) => {
     } = request.payload;
 
 
-    const id = nanoid(16);
-    const finished = (pageCount === readPage);
-    const insertedAt = new Date().toISOString();
-    const updatedAt = insertedAt;
-
     if (!name) {
         const response = h.response({
-            status: 'fail',
+            status: 'failed',
             message: 'Gagal menambahkan buku. Mohon isi nama buku',
         });
         response.code(400);
         return response;
     }
 
+    /* This is a validation for the readPage and pageCount. If the readPage is greater than pageCount, the
+    server will return a response with status fail and message. */
     if (readPage > pageCount) {
         const response = h.response({
-            status: 'fail',
-            message: 'Gagal menambahkan buku. readPage tidak boleh lebih besar dari pageCount',
+            status: 'failed',
+            message: 'Gagal menambahkan buku. Halaman yang dibaca tidak boleh lebih besar dari total halaman buku',
         });
         response.code(400);
         return response;
     }
+
+    const id = nanoid(16);
+    const finished = (pageCount === readPage);
+    const insertedAt = new Date().toISOString();
+    const updatedAt = insertedAt;
+
 
     return new Promise((resolve, reject) => {
         connection.query('INSERT INTO booksitem (id,name,year,author,summary,publisher,pageCount,readPage,finished,reading,insertedAt,updatedAt) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)',
@@ -121,7 +132,7 @@ const AddBookModule = async (request, h) => {
                         return response;
                     }
                     const response = h.response({
-                        status: 'fail',
+                        status: 'failed',
                         message: 'Buku gagal ditambahkan',
                     });
                     response.code(500);
@@ -157,7 +168,7 @@ const GetBookByIdModule = async (request, h) => {
                         return response;
                     }
                     const response = h.response({
-                        status: 'fail',
+                        status: 'failed',
                         message: 'Buku tidak ditemukan',
                     });
                     response.code(404);
@@ -172,8 +183,32 @@ const EditBookByIdModule = async (request, h) => {
 
     const { id } = request.params;
 
-    const { name, year, author, summary, publisher, pageCount, readPage, reading, finished } = request.payload;
+    const { name, year, author, summary, publisher, pageCount, readPage, reading } = request.payload;
+    const finished = (pageCount === readPage);
     const updatedAt = new Date().toISOString();
+
+    /* This is a validation for the name. If the name is empty, the server will return a response with
+    status fail and message. */
+    if (!name) {
+        const response = h.response({
+            status: 'failed',
+            message: 'Gagal memperbarui buku. Mohon isi nama buku',
+        });
+        response.code(400);
+        return response;
+    }
+
+
+    /* This is a validation for the readPage and pageCount. If the readPage is greater than pageCount,
+    the server will return a response with status fail and message. */
+    if (readPage > pageCount) {
+        const response = h.response({
+            status: 'failed',
+            message: 'Gagal memperbarui buku. Halaman yang dibaca tidak boleh lebih besar dari Total Halaman buku',
+        });
+        response.code(400);
+        return response;
+    }
 
 
     return new Promise((resolve, reject) => {
@@ -184,25 +219,13 @@ const EditBookByIdModule = async (request, h) => {
 
                 let view = async () => {
                     const books = await getBooksFromDB();
+
+                    /* Finding the index of the book with the id that is passed in the request. */
                     const index = books.findIndex((book) => book.id === id);
-                    if (!name) {
-                        const response = h.response({
-                            status: 'fail',
-                            message: 'Gagal memperbarui buku. Mohon isi nama buku',
-                        });
-                        response.code(400);
-                        return response;
-                    }
 
-                    if (readPage > pageCount) {
-                        const response = h.response({
-                            status: 'fail',
-                            message: 'Gagal memperbarui buku. readPage tidak boleh lebih besar dari pageCount',
-                        });
-                        response.code(400);
-                        return response;
-                    }
 
+                    /* This is a validation for the book. If the book is found, the server will return a
+                    response with status success and message. */
                     if (index !== -1) {
                         books[index] = {
                             ...books[index],
@@ -227,7 +250,7 @@ const EditBookByIdModule = async (request, h) => {
 
                     /* This is a response for the server when the book is not found. */
                     const response = h.response({
-                        status: 'fail',
+                        status: 'failed',
                         message: 'Gagal memperbarui buku. Id tidak ditemukan',
                     });
                     response.code(404);
@@ -247,34 +270,35 @@ const DeleteBookByIdModule = async (request, h) => {
     const { id } = request.params;
     const books = await getBooksFromDB();
 
+
     return new Promise((resolve, reject) => {
-        connection.query('DELETE FROM booksitem WHERE id=?', [id],
-            function (error, results, fields) {
-                if (error) console.log(error);
+        connection.query('DELETE FROM booksitem WHERE id=?', [id], function (error, results, fields) {
+            if (error) console.log(error);
 
-                let view = async () => {
-                    const index = books.findIndex((book) => book.id === id);
+            let view = async () => {
 
-                    if (index !== -1) {
-                        books.splice(index, 1);
-                        const response = h.response({
-                            status: 'success',
-                            message: 'Buku berhasil dihapus',
-                        });
-                        response.code(200);
-                        return response;
-                    }
+                const index = books.findIndex((book) => book.id === id);
 
+                if (index !== -1) {
+                    books.splice(index, 1);
                     const response = h.response({
-                        status: 'fail',
-                        message: 'Buku gagal dihapus. Id tidak ditemukan',
+                        status: 'success',
+                        message: 'Buku berhasil dihapus',
                     });
-                    response.code(404);
+                    response.code(200);
                     return response;
                 }
 
-                return resolve(view());
-            });
+                const response = h.response({
+                    status: 'failed',
+                    message: 'Buku gagal dihapus. Id tidak ditemukan',
+                });
+                response.code(404);
+                return response;
+            }
+
+            return resolve(view());
+        });
 
     });
 
